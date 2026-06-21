@@ -18,22 +18,22 @@ If you'd like to help translate Shifty into other languages, you can contribute 
 
 ---
 
-## Custom fork: versioning
+## Custom fork: what's different
 
-This fork uses **CalVer** (Calendar Versioning): `YYYY.MM.DD.MICRO`
+This fork adds support for **external displays** and **fullscreen-aware gamma control**.
 
-- `2026.06.21.1` — first build on June 21, 2026
-- `2026.06.21.2` — second build on the same day
-- `2026.06.22.1` — first build on June 22, 2026
+### External display gamma ramp
 
-To publish a new release:
+macOS Night Shift only works on built-in Retina displays. This fork uses `CGSetDisplayTransferByTable` gamma ramp to apply the same color temperature effect to any external monitor — tested on **BenQ D43-720 5K**.
 
-```bash
-TODAY=$(date +%Y.%m.%d)
-NEXT=$(git tag -l "$TODAY.*" | wc -l | tr -d ' ')
-NEXT=$((NEXT + 1))
-git tag "$TODAY.$NEXT" -m "Release $TODAY.$NEXT"
-git push origin "$TODAY.$NEXT"
-```
+- Three calibrated presets: 5500K (cool), 4200K (neutral-warm), 3400K (warmest)
+- Default: 4200K
+- Gamma tables calibrated from live f.lux readings
 
-GitHub Actions will auto-build the DMG and create a Release.
+### Fullscreen-aware gamma
+
+When any app enters fullscreen mode, Night Shift + gamma ramp are automatically disabled, then restored when you exit fullscreen. This uses the Window Server API (`CGWindowListCopyWindowInfo`), so no Accessibility permission is needed.
+
+### Calendar versioning
+
+Releases use `YYYY.MM.DD.MICRO` (CalVer). Each tagged release auto-builds a DMG via GitHub Actions.
