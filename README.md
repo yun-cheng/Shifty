@@ -34,6 +34,16 @@ macOS Night Shift only works on built-in Retina displays. This fork uses `CGSetD
 
 When any app enters fullscreen mode, Night Shift + gamma ramp are automatically disabled, then restored when you exit fullscreen. This uses the Window Server API (`CGWindowListCopyWindowInfo`), so no Accessibility permission is needed.
 
+### Sane defaults
+
+Unlike the original, this fork enables the most useful preferences out of the box on a fresh install:
+
+| Preference | Default |
+|---|---|
+| Launch at login | On |
+| Set icon according to Night Shift | On |
+| Disable in fullscreen | On |
+
 ### Calendar versioning
 
 Releases use `YYYY.MM.DD.MICRO` (CalVer). Each tagged release auto-builds a DMG via GitHub Actions.
