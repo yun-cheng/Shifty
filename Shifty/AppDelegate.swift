@@ -42,6 +42,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Ensure factory defaults are registered for fresh installs
         _ = PrefManager.shared
         
+        // Enable Night Shift on first install.
+        // Defer to next runloop — CBBlueLightClient may not be ready
+        // during applicationDidFinishLaunching on macOS 26.5+.
+        if !UserDefaults.standard.bool(forKey: Keys.hasSetupWindowShown) {
+            DispatchQueue.main.async {
+                if !NightShiftManager.shared.isNightShiftEnabled {
+                    NightShiftManager.shared.isNightShiftEnabled = true
+                    logw("Night Shift enabled on first launch")
+                }
+            }
+        }
+        
         #if !DEBUG
         PFMoveToApplicationsFolderIfNecessary()
         #endif

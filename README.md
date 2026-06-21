@@ -43,6 +43,7 @@ Unlike the original, this fork enables the most useful preferences out of the bo
 | Launch at login | On |
 | Set icon according to Night Shift | On |
 | Disable in fullscreen | On |
+| Night Shift on first launch | On |
 
 ### Calendar versioning
 
