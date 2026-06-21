@@ -99,7 +99,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         logw("Schedule: \(NightShiftManager.shared.schedule)")
         logw("")
 
-        updateMenuBarIcon()
+        // Start fullscreen monitoring if enabled
+                if UserDefaults.standard.bool(forKey: Keys.isFullscreenControlEnabled) {
+                    FullscreenManager.shared.startMonitoring()
+                }
+        
+                // Register login item if auto-launch is enabled (handles fresh installs)
+                if UserDefaults.standard.bool(forKey: Keys.isAutoLaunchEnabled) {
+                    let launcherAppIdentifier = "io.natethompson.ShiftyHelper"
+                    SMLoginItemSetEnabled(launcherAppIdentifier as CFString, true)
+                }
+        
+                updateMenuBarIcon()
         setStatusToggle()
         
         NightShiftManager.shared.onNightShiftChange {

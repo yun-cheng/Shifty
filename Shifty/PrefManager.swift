@@ -14,6 +14,7 @@ enum Keys {
     static let isIconSwitchingEnabled = "isIconSwitchingEnabled"
     static let isDarkModeSyncEnabled = "isDarkModeSyncEnabled"
     static let isWebsiteControlEnabled = "isWebsiteControlEnabled"
+    static let isFullscreenControlEnabled = "isFullscreenControlEnabled"
     static let trueToneControl = "trueToneControl"
     static let analyticsPermission = "fabricCrashlyticsPermission"
     static let currentAppDisableRules = "disabledApps"
@@ -49,11 +50,12 @@ class PrefManager {
         
     private func registerFactoryDefaults() {
         let factoryDefaults = [
-            Keys.isAutoLaunchEnabled: NSNumber(value: false),
+            Keys.isAutoLaunchEnabled: NSNumber(value: true),
             Keys.isStatusToggleEnabled: NSNumber(value: false),
-            Keys.isIconSwitchingEnabled: NSNumber(value: false),
+            Keys.isIconSwitchingEnabled: NSNumber(value: true),
             Keys.isDarkModeSyncEnabled: NSNumber(value: false),
             Keys.isWebsiteControlEnabled: NSNumber(value: false),
+            Keys.isFullscreenControlEnabled: NSNumber(value: true),
             Keys.trueToneControl: NSNumber(value: false),
             Keys.analyticsPermission: NSNumber(value: false),
             Keys.currentAppDisableRules: NSData(),
