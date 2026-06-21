@@ -1,0 +1,54 @@
+name: Build DMG
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Select Xcode
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+      
+      - name: Build (Release)
+        run: |
+          xcodebuild -workspace Shifty.xcworkspace \
+            -scheme Shifty \
+            -configuration Release \
+            build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            MACOSX_DEPLOYMENT_TARGET=13.0
+      
+      - name: Create DMG
+        run: |
+          APPPATH="${{ runner.temp }}/Build/Products/Release/Shifty.app"
+          # Find the built app
+          APPPATH=$(find ~/Library/Developer/Xcode/DerivedData -name "Shifty.app" -path "*/Release/*" | head -1)
+          
+          TMPDIR=$(mktemp -d)
+          cp -R "$APPPATH" "$TMPDIR/Shifty.app"
+          ln -s /Applications "$TMPDIR/Applications"
+          
+          hdiutil create -volname "Shifty" \
+            -srcfolder "$TMPDIR" \
+            -ov -format UDZO \
+            "Shifty.dmg"
+          
+          rm -rf "$TMPDIR"
+      
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shifty.dmg
+          path: Shifty.dmg
