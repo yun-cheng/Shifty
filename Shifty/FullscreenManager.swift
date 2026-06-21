@@ -71,26 +71,48 @@ class FullscreenManager {
         }
     }
     
+    /// Returns the frontmost running application with a regular window.
+    /// Uses frontmostApplication as primary (deprecated but still works),
+    /// falls back to runningApplications for future macOS compatibility.
+    private func frontmostApp() -> NSRunningApplication? {
+        if let app = NSWorkspace.shared.frontmostApplication {
+            return app
+        }
+        return NSWorkspace.shared.runningApplications
+            .first(where: { $0.activationPolicy == .regular && $0.isActive })
+    }
+    
+    /// Check if the frontmost app has any window in fullscreen mode.
+    /// Uses CGWindowListCopyWindowInfo (Window Server API) instead of AX API,
+    /// so this works without Accessibility permissions.
     private func isFrontmostAppFullscreen() -> Bool {
-        guard let app = NSWorkspace.shared.frontmostApplication else { return false }
+        guard let app = frontmostApp() else { return false }
         
-        let axApp = AXUIElementCreateApplication(app.processIdentifier)
-        var focusedWindow: CFTypeRef?
-        let result = AXUIElementCopyAttributeValue(
-            axApp,
-            "AXFocusedWindow" as CFString,
-            &focusedWindow
-        )
+        let windowInfoList = CGWindowListCopyWindowInfo(
+            .optionOnScreenOnly,
+            kCGNullWindowID
+        ) as? [[CFString: Any]] ?? []
         
-        guard result == .success, let win = focusedWindow else { return false }
+        let pid = app.processIdentifier
+        guard let mainScreen = NSScreen.main else { return false }
+        let screenFrame = mainScreen.frame
         
-        var fullscreenVal: CFTypeRef?
-        AXUIElementCopyAttributeValue(
-            win as! AXUIElement,
-            "AXFullScreen" as CFString,
-            &fullscreenVal
-        )
+        for info in windowInfoList {
+            guard (info[kCGWindowOwnerPID] as? Int32) == pid,
+                  (info[kCGWindowLayer] as? Int) == 0,
+                  let bounds = info[kCGWindowBounds] as? [String: CGFloat],
+                  let w = bounds["Width"],
+                  let h = bounds["Height"]
+            else { continue }
+            
+            // Fullscreen windows cover the entire screen area.
+            // Allow small tolerance for menu bar / dock differences.
+            let coversScreen = abs(w - screenFrame.width) < 1 && abs(h - screenFrame.height) < 1
+            if coversScreen {
+                return true
+            }
+        }
         
-        return (fullscreenVal as? Bool) ?? false
+        return false
     }
 }

@@ -39,6 +39,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var setupWindowController: NSWindowController!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        // Ensure factory defaults are registered for fresh installs
+        _ = PrefManager.shared
+        
         #if !DEBUG
         PFMoveToApplicationsFolderIfNecessary()
         #endif
