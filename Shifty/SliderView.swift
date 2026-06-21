@@ -4,7 +4,6 @@
 //
 //  Created by Nate Thompson on 5/7/17.
 //
-//
 
 import Cocoa
 import SwiftLog
@@ -15,15 +14,30 @@ class SliderView: NSView {
 
     @IBAction func shiftSliderMoved(_ sender: NSSlider) {
         let event = NSApplication.shared.currentEvent
+        let value = sender.floatValue / 100
         
         if event?.type == .leftMouseUp {
-            CBBlueLightClient.shared.blueLightReductionAmount = sender.floatValue / 100
+            // Commit value to hardware
+            CBBlueLightClient.shared.blueLightReductionAmount = value
             
-            sender.superview?.enclosingMenuItem?.menu?.cancelTracking()
+            // Update external display gamma ramp with committed value
+            if NightShiftManager.shared.isNightShiftEnabled {
+                DisplayGammaController.shared.sync(active: true, colorTemperature: value)
+            }
+            
+            // Don't close menu — let the slider stay where the user set it
+            // Let the menu naturally close when user clicks elsewhere
+            
             Event.sliderMoved(value: sender.floatValue).record()
             logw("Slider set to \(sender.floatValue)")
         } else {
-            CBBlueLightClient.shared.previewBlueLightReductionAmount(sender.floatValue / 100)
+            // Preview on built-in display
+            CBBlueLightClient.shared.previewBlueLightReductionAmount(value)
+            
+            // Live preview on external display via gamma ramp
+            if NightShiftManager.shared.isNightShiftEnabled {
+                DisplayGammaController.shared.sync(active: true, colorTemperature: value)
+            }
         }
     }
 

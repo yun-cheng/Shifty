@@ -78,7 +78,20 @@ class StatusMenuController: NSObject, NSMenuDelegate {
         }.first
         
         descriptionMenuItem.isEnabled = false
-        sliderMenuItem.view = sliderView
+        // Replace slider with preset selector
+        let presetView = PresetSelectorView(onPresetSelected: { ct in
+            NightShiftManager.shared.selectedPresetCt = ct
+            NightShiftManager.shared.isNightShiftEnabled = true
+            CBBlueLightClient.shared.blueLightReductionAmount = ct
+            logw("Preset selected with ct=\(ct), kelvin=\(5500-Int(ct*2100))K")
+            // Force gamma update directly with the selected ct value
+            DisplayGammaController.shared.sync(active: true, colorTemperature: ct)
+        })
+        presetView.frame = CGRect(
+            x: 0, y: 0,
+            width: statusMenu.size.width,
+            height: presetView.fittingSize.height)
+        sliderMenuItem.view = presetView
         
         if #available(macOS 11.0, *) {
             nightShiftSwitchView = SwitchView(title: "Night Shift", onSwitchToggle: { isSwitchEnabled in
@@ -364,7 +377,8 @@ class StatusMenuController: NSObject, NSMenuDelegate {
         switch NightShiftManager.shared.schedule {
         case .off:
             if keepVisible {
-                descriptionMenuItem.title = NSLocalizedString("description.enabled", comment: "Enabled")
+                let kelvinText = "\(NightShiftManager.shared.currentKelvin)K"
+                descriptionMenuItem.title = String(format: NSLocalizedString("description.enabled_kelvin", comment: "Enabled — 4200K"), kelvinText)
             } else {
                 descriptionMenuItem.isHidden = true
             }

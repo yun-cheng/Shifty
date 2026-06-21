@@ -37,6 +37,7 @@
 "menu.quit" = "Quit Shifty";
 
 "description.enabled" = "Enabled";
+"description.enabled_kelvin" = "Enabled — %@";
 "description.enabled_sunrise" = "Enabled until sunrise";
 "description.enabled_time" = "Enabled until %@";
 "description.disabled" = "Disabled";
@@ -46,6 +47,7 @@
 "prefs.general" = "General";
 "prefs.shortcuts" = "Shortcuts";
 "prefs.about" = "About";
+"prefs.disable_in_fullscreen" = "Disable Night Shift in fullscreen";
 
 "alert.version_message" = "This version of macOS does not support Night Shift";
 "alert.version_informative" = "Update your Mac to version 10.12.4 or higher to use Shifty.";
