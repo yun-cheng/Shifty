@@ -15,3 +15,25 @@ Shifty is customizable! Make it easier to toggle Night Shift with Quick Toggle o
 Shifty is free and open source, licensed under GPLv3. Feel free to make a pull request!
 
 If you'd like to help translate Shifty into other languages, you can contribute [here](https://shifty.natethompson.io/translate).
+
+---
+
+## Custom fork: versioning
+
+This fork uses **CalVer** (Calendar Versioning): `YYYY.MM.DD.MICRO`
+
+- `2026.06.21.1` — first build on June 21, 2026
+- `2026.06.21.2` — second build on the same day
+- `2026.06.22.1` — first build on June 22, 2026
+
+To publish a new release:
+
+```bash
+TODAY=$(date +%Y.%m.%d)
+NEXT=$(git tag -l "$TODAY.*" | wc -l | tr -d ' ')
+NEXT=$((NEXT + 1))
+git tag "$TODAY.$NEXT" -m "Release $TODAY.$NEXT"
+git push origin "$TODAY.$NEXT"
+```
+
+GitHub Actions will auto-build the DMG and create a Release.
