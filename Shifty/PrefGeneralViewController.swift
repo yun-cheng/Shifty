@@ -80,7 +80,24 @@ class PrefGeneralViewController: NSViewController, MASPreferencesViewController 
         }
         
         defaultDarkModeState = SLSGetAppearanceThemeLegacy()
-
+        
+        // Add fullscreen control checkbox programmatically
+        let fullscreenCheckbox = NSButton(checkboxWithTitle: NSLocalizedString("prefs.disable_in_fullscreen", comment: "Disable Night Shift in fullscreen"),
+                                          target: self,
+                                          action: #selector(setFullscreenControl(_:)))
+        fullscreenCheckbox.translatesAutoresizingMaskIntoConstraints = false
+        fullscreenCheckbox.state = UserDefaults.standard.bool(forKey: Keys.isFullscreenControlEnabled) ? .on : .off
+        
+        // Find the main preferences stack view and insert before the last item (analytics)
+        if let prefStackView = view.subviews.lazy.compactMap({ $0 as? NSStackView }).first {
+            let lastIndex = prefStackView.arrangedSubviews.count - 1
+            if lastIndex >= 0 {
+                prefStackView.insertArrangedSubview(fullscreenCheckbox, at: lastIndex)
+            } else {
+                prefStackView.addArrangedSubview(fullscreenCheckbox)
+            }
+        }
+        
         //Fix layer-backing issues in 10.12 that cause window corners to not be rounded.
         if !ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 10, minorVersion: 13, patchVersion: 0)) {
             view.wantsLayer = false
@@ -167,6 +184,16 @@ class PrefGeneralViewController: NSViewController, MASPreferencesViewController 
                 CBTrueToneClient.shared.isTrueToneEnabled = true
             }
             logw("True Tone control set to \(sender.state.rawValue)")
+        }
+    }
+    
+    @IBAction func setFullscreenControl(_ sender: NSButton) {
+        let enabled = sender.state == .on
+        UserDefaults.standard.set(enabled, forKey: Keys.isFullscreenControlEnabled)
+        logw("Fullscreen control set to \(enabled)")
+        
+        if enabled {
+            FullscreenManager.shared.startMonitoring()
         }
     }
     

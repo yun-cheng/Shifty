@@ -16,7 +16,17 @@ class NightShiftManager {
     var nightShiftChangeListeners = [() -> Void]()
 
     var userSet: UserSet = .notSet
+    var previousFullscreenState: UserSet = .off
+    var isFullscreenActive = false
     var userInitiatedShift = false
+    var selectedPresetCt: Float = 0.619 // default 4200K
+    
+    /// Current effective color temperature in Kelvin for external displays
+    var currentKelvin: Int {
+        let ct = colorTemperature
+        let kelvin = 5500.0 - Double(ct) * 2100.0
+        return Int(kelvin)
+    }
     
     static var supportsNightShift: Bool {
         CBBlueLightClient.supportsNightShift
@@ -103,6 +113,9 @@ class NightShiftManager {
             
             self.updateDarkMode()
         }
+        
+        // Sync gamma to current Night Shift state at startup
+        updateExternalDisplays()
     }
     
     func onNightShiftChange(_ listener: @escaping () -> Void) {
@@ -214,11 +227,33 @@ class NightShiftManager {
                     client.setNightShiftEnabled(false)
                 }
             }
+        case .fullscreenDisableActivated:
+            previousFullscreenState = userSet
+            isFullscreenActive = true
+            client.setNightShiftEnabled(false)
+        case .fullscreenDisableDeactivated:
+            isFullscreenActive = false
+            if !isDisabledWithTimer && !isDisableRuleActive {
+                switch previousFullscreenState {
+                case .notSet:
+                    client.setToSchedule()
+                case .on:
+                    client.setNightShiftEnabled(true)
+                case .off:
+                    client.setNightShiftEnabled(false)
+                }
+            }
         case .scheduleChanged:
             userSet = .notSet
             client.setToSchedule()
         }
         logw("Responded to event: \(event)")
+        updateExternalDisplays()
+    }
+    
+    func updateExternalDisplays() {
+        let effectiveState = client.isNightShiftEnabled && !isDisableRuleActive && !isDisabledWithTimer && !isFullscreenActive
+        DisplayGammaController.shared.sync(active: effectiveState, colorTemperature: selectedPresetCt)
     }
     
     
@@ -267,6 +302,8 @@ enum NightShiftEvent {
     case nightShiftDisableRuleDeactivated
     case nightShiftEnableRuleActivated
     case nightShiftEnableRuleDeactivated
+    case fullscreenDisableActivated
+    case fullscreenDisableDeactivated
     case scheduleChanged
 }
 
