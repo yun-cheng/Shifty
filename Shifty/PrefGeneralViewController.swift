@@ -166,7 +166,21 @@ class PrefGeneralViewController: NSViewController, MASPreferencesViewController 
                 logw("Accessibility permissions alert shown")
 
                 UserDefaults.standard.set(false, forKey: Keys.isWebsiteControlEnabled)
-                NSApp.runModal(for: AccessibilityWindow().window!)
+                sender.state = .off
+                let accessibilityWindow = AccessibilityWindow()
+                NSApp.runModal(for: accessibilityWindow.window!)
+                
+                // AccessibilityWindow auto-closes when permission is granted (live probe, not cached AXIsProcessTrusted)
+                if accessibilityWindow.wasGranted {
+                    logw("Accessibility permission granted — starting browser watcher")
+                    sender.state = .on
+                    UserDefaults.standard.set(true, forKey: Keys.isWebsiteControlEnabled)
+                    BrowserManager.shared.updateForSupportedBrowser()
+                }
+            } else {
+                logw("Starting browser watcher")
+                UserDefaults.standard.set(true, forKey: Keys.isWebsiteControlEnabled)
+                BrowserManager.shared.updateForSupportedBrowser()
             }
         } else {
             BrowserManager.shared.stopBrowserWatcher()

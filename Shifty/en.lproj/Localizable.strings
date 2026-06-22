@@ -78,3 +78,6 @@
 "analytics.data_usage_list_1" = "None of this data is sold to anyone (and nobody would want to buy it anyways)";
 "analytics.data_usage_list_2" = "Helps to resolve problems and make Shifty better";
 
+"accessibility.waiting" = "Waiting for access...";
+"accessibility.granted" = "Granted ✓";
+

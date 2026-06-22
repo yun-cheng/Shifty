@@ -211,12 +211,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func observeAccessibilityApiNotifications() {
         DistributedNotificationCenter.default().addObserver(forName: NSNotification.Name("com.apple.accessibility.api"), object: nil, queue: nil) { _ in
-            logw("Accessibility permissions changed: \(UIElement.isProcessTrusted(withPrompt: false))")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                if UIElement.isProcessTrusted(withPrompt: false) {
+                let isTrusted = UIElement.isProcessTrusted(withPrompt: false)
+                logw("Accessibility permissions changed: \(isTrusted)")
+                if isTrusted {
                     UserDefaults.standard.set(true, forKey: Keys.isWebsiteControlEnabled)
+                    // Re-create AX observer for browser URL watching
+                    if UserDefaults.standard.bool(forKey: Keys.isWebsiteControlEnabled) {
+                        BrowserManager.shared.updateForSupportedBrowser()
+                    }
                 } else {
                     UserDefaults.standard.set(false, forKey: Keys.isWebsiteControlEnabled)
+                    BrowserManager.shared.stopBrowserWatcher()
                 }
             })
         }
