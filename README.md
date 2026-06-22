@@ -34,6 +34,12 @@ macOS Night Shift only works on built-in Retina displays. This fork uses `CGSetD
 
 When any app enters fullscreen mode, Night Shift + gamma ramp are automatically disabled, then restored when you exit fullscreen. This uses the Window Server API (`CGWindowListCopyWindowInfo`), so no Accessibility permission is needed.
 
+### Accessibility auto-detect for Website Shifting
+
+Website Shifting (per-site Night Shift rules) requires Accessibility permission to watch browser URLs. This fork uses an **AX live probe** (`AXUIElementCopyAttributeValue` → Window Server IPC) instead of relying on `AXIsProcessTrusted()` — which macOS caches per-process and never refreshes until app restart.
+
+When you grant Accessibility in System Settings, Shifty auto-detects it and enables Website Shifting immediately — no restart needed. If the probe fails after 30 seconds, an in-app restart button appears as fallback.
+
 ### Sane defaults
 
 Unlike the original, this fork enables the most useful preferences out of the box on a fresh install:
